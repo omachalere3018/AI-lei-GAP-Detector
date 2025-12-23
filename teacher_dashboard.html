@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Teacher Dashboard</title>
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+
+    <!-- Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+<div class="dashboard-wrapper">
+
+    <!-- HEADER -->
+    <header class="dashboard-header">
+        <h2><i class="fa-solid fa-user-tie"></i> Teacher Dashboard</h2>
+        <a href="/logout" class="logout-btn">Logout</a>
+    </header>
+
+    <!-- DASHBOARD OPTIONS -->
+    <div class="dashboard-cards">
+
+        <div class="dashboard-card">
+            <i class="fa-solid fa-fire"></i>
+            <h3>Topic Confusion</h3>
+            <p>Identify most confusing topics</p>
+        </div>
+
+        <div class="dashboard-card">
+            <i class="fa-solid fa-chart-line"></i>
+            <h3>Weakness Analyzer</h3>
+            <p>AI-based performance analysis</p>
+        </div>
+
+        <div class="dashboard-card">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            <h3>Study–Reality Gap</h3>
+            <p>Compare study claims vs results</p>
+        </div>
+
+        <!-- 🔥 NEW OPTION ADDED -->
+        <div class="dashboard-card">
+            <i class="fa-solid fa-circle-plus"></i>
+            <h3>Add Questions</h3>
+            <p>Create & manage questions</p>
+        </div>
+
+    </div>
+
+</div>
+
+</body>
+</html>
+
