@@ -4,6 +4,17 @@
 <head>
     <title>AI Generated Quiz</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='quiz.css') }}">
+    <style>
+        .correct {
+            color: green;
+            font-weight: bold;
+        }
+
+        .wrong {
+            color: red;
+            font-weight: bold;
+        }
+    </style>
 </head>
 
 <body>
@@ -12,7 +23,6 @@
         <h2>AI Generated Quiz</h2>
 
         <label>Subject</label>
-        <!-- <input type="text" id="subject" value="{{ subject }}" readonly> -->
         <input type="text" id="subject" value="DSA" readonly>
 
         <label>Topic</label>
@@ -27,16 +37,32 @@
 
         <button onclick="generateQuiz()">Generate Quiz</button>
 
+        <p><b>Time:</b> <span id="timer">0</span> seconds</p>
+
         <div id="quiz-area"></div>
     </div>
 
     <script>
         let correctAnswers = [];
+        let startTime;
+        let timerInterval;
 
         function generateQuiz() {
             const subject = document.getElementById("subject").value;
             const topic = document.getElementById("topic").value;
             const difficulty = document.getElementById("difficulty").value;
+
+            if (!topic) {
+                alert("Please enter a topic");
+                return;
+            }
+
+            startTime = Date.now();
+            clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                document.getElementById("timer").innerText =
+                    Math.floor((Date.now() - startTime) / 1000);
+            }, 1000);
 
             fetch("/generate-quiz", {
                 method: "POST",
@@ -45,10 +71,24 @@
             })
                 .then(res => res.json())
                 .then(data => {
-                    let html = "";
-                    correctAnswers = [];
+                    console.log("RAW QUIZ RESPONSE:", data); // 🔥 IMPORTANT
 
-                    data.forEach((q, index) => {
+                    // ✅ NORMALIZE RESPONSE
+                    let questions = [];
+
+                    if (Array.isArray(data)) {
+                        questions = data;
+                    } else if (data.quiz && Array.isArray(data.quiz)) {
+                        questions = data.quiz;
+                    } else {
+                        alert("AI could not generate quiz. Try again.");
+                        return;
+                    }
+
+                    correctAnswers = [];
+                    let html = "";
+
+                    questions.forEach((q, index) => {
                         correctAnswers.push(q.answer);
 
                         html += `<p><b>Q${index + 1}. ${q.question}</b></p>`;
@@ -67,62 +107,51 @@
                     html += `<h3 id="result"></h3>`;
 
                     document.getElementById("quiz-area").innerHTML = html;
+                })
+                .catch(err => {
+                    console.error("Quiz fetch failed:", err);
+                    alert("Server error while generating quiz");
                 });
         }
 
-        // function submitQuiz() {
-        //     let score = 0;
-
-        //     correctAnswers.forEach((answer, index) => {
-        //         const selected = document.querySelector(
-        //             `input[name="q${index}"]:checked`
-        //         );
-        //         if (selected && selected.value === answer) {
-        //             score++;
-        //         }
-        //     });
-
-        //     document.getElementById("result").innerHTML =
-        //         `You scored ${score} / ${correctAnswers.length}`;
-        // }/
-
-        //let correctAnswers = [];
-
         function submitQuiz() {
+            clearInterval(timerInterval);
+
             let score = 0;
+            const timeTaken = Math.floor((Date.now() - startTime) / 1000);
 
             correctAnswers.forEach((correct, index) => {
                 const options = document.getElementsByName(`q${index}`);
                 let selected = null;
 
                 options.forEach(opt => {
-                    if (opt.checked) {
-                        selected = opt.value;
-                    }
+                    if (opt.checked) selected = opt.value;
                 });
 
                 options.forEach(opt => {
                     const label = opt.parentElement;
-
-                    if (opt.value === correct) {
-                        label.classList.add("correct");
-                    }
-
-                    if (opt.checked && opt.value !== correct) {
-                        label.classList.add("wrong");
-                    }
+                    if (opt.value === correct) label.classList.add("correct");
+                    if (opt.checked && opt.value !== correct) label.classList.add("wrong");
                 });
 
-                if (selected === correct) {
-                    score++;
-                }
+                if (selected === correct) score++;
             });
 
             document.getElementById("result").innerText =
                 `You scored ${score} / ${correctAnswers.length}`;
+
+            fetch("/save-result", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    subject: document.getElementById("subject").value,
+                    topic: document.getElementById("topic").value,
+                    score,
+                    total: correctAnswers.length,
+                    timeTaken
+                })
+            });
         }
-
-
     </script>
 
 
