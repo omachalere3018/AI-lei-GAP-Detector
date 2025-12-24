@@ -31,51 +31,100 @@
     </div>
 
     <script>
-        function generateQuiz() {
-            alert("Generate Quiz button clicked");  // ✅ DEBUG CONFIRMATION
+        let correctAnswers = [];
 
+        function generateQuiz() {
             const subject = document.getElementById("subject").value;
             const topic = document.getElementById("topic").value;
             const difficulty = document.getElementById("difficulty").value;
 
             fetch("/generate-quiz", {
                 method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    subject: subject,
-                    topic: topic,
-                    difficulty: difficulty
-                })
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ subject, topic, difficulty })
             })
-                .then(res => {
-                    if (!res.ok) {
-                        throw new Error("Server error: " + res.status);
-                    }
-                    return res.json();
-                })
+                .then(res => res.json())
                 .then(data => {
-                    console.log("Quiz Data:", data);
-
                     let html = "";
+                    correctAnswers = [];
+
                     data.forEach((q, index) => {
+                        correctAnswers.push(q.answer);
+
                         html += `<p><b>Q${index + 1}. ${q.question}</b></p>`;
                         q.options.forEach(opt => {
-                            html += `<label>
-                                    <input type="radio" name="q${index}"> ${opt}
-                                 </label><br>`;
+                            html += `
+                            <label>
+                                <input type="radio" name="q${index}" value="${opt}">
+                                ${opt}
+                            </label><br>
+                        `;
                         });
                         html += "<hr>";
                     });
+
+                    html += `<button onclick="submitQuiz()">Submit Quiz</button>`;
+                    html += `<h3 id="result"></h3>`;
+
                     document.getElementById("quiz-area").innerHTML = html;
-                })
-                .catch(err => {
-                    alert("Error: " + err.message);
-                    console.error(err);
                 });
         }
+
+        // function submitQuiz() {
+        //     let score = 0;
+
+        //     correctAnswers.forEach((answer, index) => {
+        //         const selected = document.querySelector(
+        //             `input[name="q${index}"]:checked`
+        //         );
+        //         if (selected && selected.value === answer) {
+        //             score++;
+        //         }
+        //     });
+
+        //     document.getElementById("result").innerHTML =
+        //         `You scored ${score} / ${correctAnswers.length}`;
+        // }/
+
+        //let correctAnswers = [];
+
+        function submitQuiz() {
+            let score = 0;
+
+            correctAnswers.forEach((correct, index) => {
+                const options = document.getElementsByName(`q${index}`);
+                let selected = null;
+
+                options.forEach(opt => {
+                    if (opt.checked) {
+                        selected = opt.value;
+                    }
+                });
+
+                options.forEach(opt => {
+                    const label = opt.parentElement;
+
+                    if (opt.value === correct) {
+                        label.classList.add("correct");
+                    }
+
+                    if (opt.checked && opt.value !== correct) {
+                        label.classList.add("wrong");
+                    }
+                });
+
+                if (selected === correct) {
+                    score++;
+                }
+            });
+
+            document.getElementById("result").innerText =
+                `You scored ${score} / ${correctAnswers.length}`;
+        }
+
+
     </script>
+
 
 </body>
 
