@@ -55,9 +55,6 @@ def quiz():
 
 
 # ---------------- AI QUESTION GENERATION (ADDED) ------------
-
-import json
-
 @app.route("/generate-quiz", methods=["POST"])
 def generate_quiz():
     data = request.json
@@ -67,13 +64,15 @@ def generate_quiz():
     difficulty = data.get("difficulty")
 
     prompt = f"""
-Generate exactly 5 {difficulty} level MCQs for subject {subject} on topic {topic}.
+Generate exactly 10 {difficulty} level MCQs for subject {subject} on topic {topic}.
 
 Rules:
+- Each question must have 4 options
+- Only ONE correct answer
 - Return ONLY valid JSON
-- No explanation text
+- No explanation
 - No markdown
-- No extra words
+- No extra text
 
 JSON format:
 [
@@ -93,17 +92,13 @@ JSON format:
         )
 
         quiz_text = response.choices[0].message.content.strip()
-
-        print("AI RAW RESPONSE:\n", quiz_text)  # 👈 DEBUG
-
-        quiz_data = json.loads(quiz_text)  # ✅ SAFE JSON PARSE
+        quiz_data = json.loads(quiz_text)
 
         return jsonify(quiz_data)
 
     except Exception as e:
-        print("ERROR:", e)
-        return jsonify({"error": "Failed to generate quiz"}), 500
-
+        print("AI ERROR:", e)
+        return jsonify({"error": "AI generation failed"}), 500
 
 # ---------------- LOGOUT (UNCHANGED) ----------------
 @app.route("/logout")
