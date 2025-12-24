@@ -158,3 +158,8 @@ canvas {
 .start-quiz-btn:hover {
     background-color: #3498db;
 }
+
+canvas {
+    width: 100% !important;
+    height: 350px !important;
+}
