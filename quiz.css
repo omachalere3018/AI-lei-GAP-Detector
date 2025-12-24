@@ -80,3 +80,13 @@ button {
     border: none;
     cursor: pointer;
 }
+
+.correct {
+    color: green;
+    font-weight: bold;
+}
+
+.wrong {
+    color: red;
+    font-weight: bold;
+}
