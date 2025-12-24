@@ -136,3 +136,25 @@ canvas {
 .tips h4 {
     margin-top: 0;
 }
+
+
+/* Center Start AI Quiz Button */
+.quiz-btn-container {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.start-quiz-btn {
+    padding: 12px 25px;
+    font-size: 16px;
+    background-color: #2980b9;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.start-quiz-btn:hover {
+    background-color: #3498db;
+}

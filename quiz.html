@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>AI Generated Quiz</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='quiz.css') }}">
+</head>
+
+<body>
+
+    <div class="quiz-box">
+        <h2>AI Generated Quiz</h2>
+
+        <label>Subject</label>
+        <!-- <input type="text" id="subject" value="{{ subject }}" readonly> -->
+        <input type="text" id="subject" value="DSA" readonly>
+
+        <label>Topic</label>
+        <input type="text" id="topic" placeholder="Enter topic (eg: Arrays)">
+
+        <label>Difficulty</label>
+        <select id="difficulty">
+            <option value="Easy">Easy</option>
+            <option value="Medium">Medium</option>
+            <option value="Hard">Hard</option>
+        </select>
+
+        <button onclick="generateQuiz()">Generate Quiz</button>
+
+        <div id="quiz-area"></div>
+    </div>
+
+    <script>
+        function generateQuiz() {
+            alert("Generate Quiz button clicked");  // ✅ DEBUG CONFIRMATION
+
+            const subject = document.getElementById("subject").value;
+            const topic = document.getElementById("topic").value;
+            const difficulty = document.getElementById("difficulty").value;
+
+            fetch("/generate-quiz", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    subject: subject,
+                    topic: topic,
+                    difficulty: difficulty
+                })
+            })
+                .then(res => {
+                    if (!res.ok) {
+                        throw new Error("Server error: " + res.status);
+                    }
+                    return res.json();
+                })
+                .then(data => {
+                    console.log("Quiz Data:", data);
+
+                    let html = "";
+                    data.forEach((q, index) => {
+                        html += `<p><b>Q${index + 1}. ${q.question}</b></p>`;
+                        q.options.forEach(opt => {
+                            html += `<label>
+                                    <input type="radio" name="q${index}"> ${opt}
+                                 </label><br>`;
+                        });
+                        html += "<hr>";
+                    });
+                    document.getElementById("quiz-area").innerHTML = html;
+                })
+                .catch(err => {
+                    alert("Error: " + err.message);
+                    console.error(err);
+                });
+        }
+    </script>
+
+</body>
+
+</html>

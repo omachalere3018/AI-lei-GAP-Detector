@@ -6,10 +6,10 @@ const subjectData = {
             { test: 'Linked List Test', score: 65, growth: 3 }
         ],
         weakness: { Arrays: 5, LinkedList: 8, Trees: 4 },
-        feedback: { 
-            scores: [75, 65, 60], 
-            labels: ['Arrays','LinkedList','Trees'], 
-            tips: ['Revise Linked Lists', 'Practice Tree traversal'] 
+        feedback: {
+            scores: [75, 65, 60],
+            labels: ['Arrays', 'LinkedList', 'Trees'],
+            tips: ['Revise Linked Lists', 'Practice Tree traversal']
         }
     },
     DBMS: {
@@ -18,10 +18,10 @@ const subjectData = {
             { test: 'SQL Query Test', score: 55, growth: -2 }
         ],
         weakness: { 'ER Diagrams': 2, 'SQL Queries': 6, 'Normalization': 4 },
-        feedback: { 
-            scores: [80,55,60], 
-            labels: ['ER Diagrams','SQL Queries','Normalization'], 
-            tips: ['Focus on SQL Queries', 'Practice Normalization'] 
+        feedback: {
+            scores: [80, 55, 60],
+            labels: ['ER Diagrams', 'SQL Queries', 'Normalization'],
+            tips: ['Focus on SQL Queries', 'Practice Normalization']
         }
     },
     OS: {
@@ -30,10 +30,10 @@ const subjectData = {
             { test: 'Memory Management', score: 75, growth: 1 }
         ],
         weakness: { 'Process': 4, 'Memory': 5, 'File System': 3 },
-        feedback: { 
-            scores: [70,75,65], 
-            labels: ['Process','Memory','File System'], 
-            tips: ['Revise Process scheduling', 'Practice Memory management problems'] 
+        feedback: {
+            scores: [70, 75, 65],
+            labels: ['Process', 'Memory', 'File System'],
+            tips: ['Revise Process scheduling', 'Practice Memory management problems']
         }
     },
     CN: {
@@ -42,10 +42,10 @@ const subjectData = {
             { test: 'Routing Test', score: 60, growth: 2 }
         ],
         weakness: { 'TCP/IP': 5, Routing: 6, 'Network Security': 4 },
-        feedback: { 
-            scores: [65,60,70], 
-            labels: ['TCP/IP','Routing','Network Security'], 
-            tips: ['Revise Routing algorithms', 'Practice TCP/IP concepts'] 
+        feedback: {
+            scores: [65, 60, 70],
+            labels: ['TCP/IP', 'Routing', 'Network Security'],
+            tips: ['Revise Routing algorithms', 'Practice TCP/IP concepts']
         }
     }
 };
@@ -94,7 +94,7 @@ function updateWeakness(subject) {
             datasets: [{
                 label: 'Mistakes per Topic',
                 data: values,
-                backgroundColor: ['#e74c3c','#f1c40f','#3498db','#2ecc71']
+                backgroundColor: ['#e74c3c', '#f1c40f', '#3498db', '#2ecc71']
             }]
         },
         options: {
@@ -139,7 +139,7 @@ function updateFeedback(subject) {
 }
 
 // Study Claim Form
-document.getElementById('studyForm').addEventListener('submit', function(e){
+document.getElementById('studyForm').addEventListener('submit', function (e) {
     e.preventDefault();
     alert("Study claim submitted!");
     this.reset();
