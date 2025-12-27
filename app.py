@@ -1,11 +1,17 @@
-import json
 import sqlite3
+import json
+import os
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from dotenv import load_dotenv
 from openai import OpenAI
-import os
-import json
-import openai
+# ===
+# import firebase_admin
+# from firebase_admin import credentials, firestore
+
+# cred = credentials.Certificate("firebase-key.json")
+# firebase_admin.initialize_app(cred)
+
+# db = firestore.client()
 
 # ---------------- APP SETUP ----------------
 app = Flask(__name__)
@@ -24,20 +30,35 @@ def init_db():
     conn = get_db()
     c = conn.cursor()
     c.execute("""
-    CREATE TABLE IF NOT EXISTS quiz_results (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        subject TEXT,
-        topic TEXT,
-        score INTEGER,
-        total INTEGER,
-        time_taken INTEGER,
-        created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-    )
+        CREATE TABLE IF NOT EXISTS quiz_results (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            subject TEXT,
+            topic TEXT,
+            score INTEGER,
+            total INTEGER,
+            time_taken INTEGER,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    conn.commit()
+    conn.close()
+
+# ✅ ADDED USERS TABLE (SIGNUP SUPPORT)
+def init_users():
+    conn = get_db()
+    c = conn.cursor()
+    c.execute("""
+        CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username TEXT UNIQUE,
+            password TEXT
+        )
     """)
     conn.commit()
     conn.close()
 
 init_db()
+init_users()
 
 # ---------------- LOGIN ----------------
 TEACHERS = {
@@ -48,11 +69,90 @@ TEACHERS = {
 @app.route("/", methods=["GET", "POST"])
 def login():
     if request.method == "POST":
-        if TEACHERS.get(request.form["username"]) == request.form["password"]:
-            session["student_id"] = "student1"  # mock student
+        mode = request.form.get("mode", "login")
+        username = request.form["username"]
+        password = request.form["password"]
+
+        conn = get_db()
+        c = conn.cursor()
+
+        # ---------------- SIGNUP ----------------
+        if mode == "signup":
+            try:
+                c.execute(
+                    "INSERT INTO users (username, password) VALUES (?, ?)",
+                    (username, password)
+                )
+                conn.commit()
+                conn.close()
+                return render_template(
+                    "login.html",
+                    error="Signup successful! Please login."
+                )
+            except sqlite3.IntegrityError:
+                conn.close()
+                return render_template(
+                    "login.html",
+                    error="Username already exists"
+                )
+
+        # ---------------- TEACHER LOGIN ----------------
+        if TEACHERS.get(username) == password:
+            session["student_id"] = username
             return redirect(url_for("dashboard"))
+
+        # ---------------- STUDENT LOGIN ----------------
+        c.execute(
+            "SELECT * FROM users WHERE username=? AND password=?",
+            (username, password)
+        )
+        user = c.fetchone()
+        conn.close()
+
+        if user:
+            session["student_id"] = username
+            return redirect(url_for("dashboard"))
+
         return render_template("login.html", error="Invalid Login")
+
     return render_template("login.html")
+
+# ===
+
+@app.route("/signup", methods=["POST"])
+def signup():
+    email = request.form["email"]
+    password = request.form["password"]
+
+    user_ref = db.collection("users").document(email)
+    if user_ref.get().exists:
+        return render_template("login.html", error="User already exists")
+
+    user_ref.set({
+        "email": email,
+        "password": password,
+        "role": "student"
+    })
+
+    return redirect(url_for("login"))
+# =====
+
+# @app.route("/", methods=["GET", "POST"])
+# def login():
+#     if request.method == "POST":
+#         email = request.form["username"]
+#         password = request.form["password"]
+
+#         user = db.collection("users").document(email).get()
+
+#         if user.exists and user.to_dict()["password"] == password:
+#             session["student_id"] = email
+#             return redirect(url_for("dashboard"))
+
+#         return render_template("login.html", error="Invalid login")
+
+#     return render_template("login.html")
+
 
 # ---------------- DASHBOARD ----------------
 @app.route("/dashboard")
@@ -61,7 +161,7 @@ def dashboard():
         return redirect(url_for("login"))
     return render_template("studentindex.html")
 
-# ---------------- QUIZ ----------------
+# ---------------- QUIZ PAGE ----------------
 @app.route("/quiz")
 def quiz():
     return render_template("quiz.html")
@@ -75,18 +175,13 @@ def generate_quiz():
     difficulty = data.get("difficulty")
 
     prompt = f"""
-You are an API.
-
 Return ONLY valid JSON.
-Do NOT explain.
-Do NOT use markdown.
-
-Generate exactly 10 MCQ questions.
+Generate exactly 10 MCQs.
 
 FORMAT:
 [
   {{
-    "question": "Question text",
+    "question": "text",
     "options": ["A", "B", "C", "D"],
     "answer": "A"
   }}
@@ -105,37 +200,15 @@ DIFFICULTY: {difficulty}
         )
 
         raw = response.choices[0].message.content.strip()
-        print("🔥 RAW AI RESPONSE:", raw)
-
-        # 🛡️ Extract JSON safely
         start = raw.find("[")
         end = raw.rfind("]") + 1
-        json_text = raw[start:end]
-
-        quiz = json.loads(json_text)
-
-        if not isinstance(quiz, list):
-            raise ValueError("Quiz is not a list")
+        quiz = json.loads(raw[start:end])
 
         return jsonify(quiz)
 
     except Exception as e:
-        print("❌ QUIZ GENERATION FAILED:", e)
-
-        # ✅ FALLBACK QUESTIONS (SO UI NEVER BREAKS)
-        return jsonify([
-            {
-                "question": "What is an array?",
-                "options": [
-                    "Collection of elements",
-                    "Single variable",
-                    "Function",
-                    "Pointer"
-                ],
-                "answer": "Collection of elements"
-            }
-        ])
-
+        print("Quiz generation error:", e)
+        return jsonify([])
 
 # ---------------- SAVE QUIZ RESULT ----------------
 @app.route("/save-result", methods=["POST"])
@@ -157,17 +230,19 @@ def save_result():
     conn.close()
     return jsonify({"status": "saved"})
 
-# ---------------- PRACTICE DATA ----------------
+# ---------------- PRACTICE / TEST TABLE ----------------
 @app.route("/practice-data/<subject>")
 def practice_data(subject):
     conn = get_db()
     c = conn.cursor()
     c.execute("""
-        SELECT topic,
-               ROUND(AVG(score * 100.0 / total), 0) AS avg_score,
-               COUNT(*) AS attempts
+        SELECT 
+            topic,
+            ROUND(AVG(score * 100.0 / total), 0) AS avg_score,
+            COUNT(*) AS attempts,
+            ROUND(AVG(time_taken), 0) AS timeTaken
         FROM quiz_results
-        WHERE subject=?
+        WHERE subject = ?
         GROUP BY topic
     """, (subject,))
     rows = c.fetchall()
