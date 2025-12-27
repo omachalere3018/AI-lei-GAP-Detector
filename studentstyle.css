@@ -163,3 +163,32 @@ canvas {
     width: 100% !important;
     height: 350px !important;
 }
+
+
+.quiz-btn-container {
+    display: flex;
+    justify-content: center;
+    margin: 25px 0 35px 0;
+}
+
+.quiz-btn-container button {
+    background: linear-gradient(135deg, #2563eb, #1e40af);
+    color: #ffffff;
+    border: none;
+    padding: 14px 34px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 8px 22px rgba(37, 99, 235, 0.35);
+    transition: all 0.3s ease;
+}
+
+.quiz-btn-container button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(37, 99, 235, 0.5);
+}
+
+.quiz-btn-container button:active {
+    transform: scale(0.96);
+}
