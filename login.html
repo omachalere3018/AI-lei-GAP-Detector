@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -41,6 +41,93 @@
 
         </div>
     </div>
+
+</body>
+
+</html> -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Student Login</title>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+    <style>
+        .toggle {
+            margin-top: 15px;
+            font-size: 14px;
+            cursor: pointer;
+            color: #4f46e5;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-wrapper">
+        <div class="login-box">
+
+            <div class="icon">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+
+            <h2 id="formTitle">User Login</h2>
+            <p class="subtitle">AI Learning Weakness Analyzer</p>
+
+            {% if error %}
+            <p class="error">{{ error }}</p>
+            {% endif %}
+
+            <!-- LOGIN / SIGNUP FORM -->
+            <form method="POST">
+                <input type="hidden" name="mode" id="mode" value="login">
+
+                <div class="input-box">
+                    <i class="fa fa-user"></i>
+                    <input type="text" name="username" placeholder="Username" required>
+                </div>
+
+                <div class="input-box">
+                    <i class="fa fa-lock"></i>
+                    <input type="password" name="password" placeholder="Password" required>
+                </div>
+
+                <button type="submit" id="submitBtn">Login</button>
+            </form>
+
+            <!-- TOGGLE -->
+            <p class="toggle" onclick="toggleForm()">
+                Don’t have an account? Sign Up
+            </p>
+
+        </div>
+    </div>
+
+    <script>
+        function toggleForm() {
+            const mode = document.getElementById("mode");
+            const title = document.getElementById("formTitle");
+            const btn = document.getElementById("submitBtn");
+            const toggle = document.querySelector(".toggle");
+
+            if (mode.value === "login") {
+                mode.value = "signup";
+                title.innerText = "User Signup";
+                btn.innerText = "Sign Up";
+                toggle.innerText = "Already have an account? Login";
+            } else {
+                mode.value = "login";
+                title.innerText = "User Login";
+                btn.innerText = "Login";
+                toggle.innerText = "Don’t have an account? Sign Up";
+            }
+        }
+    </script>
 
 </body>
 
