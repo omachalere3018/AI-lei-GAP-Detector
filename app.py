@@ -4,21 +4,20 @@ import os
 from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 from dotenv import load_dotenv
 from openai import OpenAI
-# ===
-# import firebase_admin
-# from firebase_admin import credentials, firestore
-
-# cred = credentials.Certificate("firebase-key.json")
-# firebase_admin.initialize_app(cred)
-
-# db = firestore.client()
 
 # ---------------- APP SETUP ----------------
 app = Flask(__name__)
 app.secret_key = "secret123"
 
 load_dotenv()
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+OPENAI_KEY = os.environ.get("OPENAI_API_KEY")
+
+if not OPENAI_KEY:
+    raise ValueError("OPENAI_API_KEY not found in environment")
+
+client = OpenAI(api_key=OPENAI_KEY)
+
 
 # ---------------- DATABASE ----------------
 def get_db():
@@ -119,39 +118,22 @@ def login():
 
 # ===
 
-@app.route("/signup", methods=["POST"])
-def signup():
-    email = request.form["email"]
-    password = request.form["password"]
+# @app.route("/signup", methods=["POST"])
+# def signup():
+#     email = request.form["email"]
+#     password = request.form["password"]
 
-    user_ref = db.collection("users").document(email)
-    if user_ref.get().exists:
-        return render_template("login.html", error="User already exists")
+#     user_ref = db.collection("users").document(email)
+#     if user_ref.get().exists:
+#         return render_template("login.html", error="User already exists")
 
-    user_ref.set({
-        "email": email,
-        "password": password,
-        "role": "student"
-    })
+#     user_ref.set({
+#         "email": email,
+#         "password": password,
+#         "role": "student"
+#     })
 
-    return redirect(url_for("login"))
-# =====
-
-# @app.route("/", methods=["GET", "POST"])
-# def login():
-#     if request.method == "POST":
-#         email = request.form["username"]
-#         password = request.form["password"]
-
-#         user = db.collection("users").document(email).get()
-
-#         if user.exists and user.to_dict()["password"] == password:
-#             session["student_id"] = email
-#             return redirect(url_for("dashboard"))
-
-#         return render_template("login.html", error="Invalid login")
-
-#     return render_template("login.html")
+#     return redirect(url_for("login"))
 
 
 # ---------------- DASHBOARD ----------------
@@ -167,6 +149,87 @@ def quiz():
     return render_template("quiz.html")
 
 # ---------------- AI QUIZ GENERATION ----------------
+# @app.route("/generate-quiz", methods=["POST"])
+# def generate_quiz():
+#     data = request.json
+#     subject = data.get("subject")
+#     topic = data.get("topic")
+#     difficulty = data.get("difficulty")
+
+#     prompt = f"""
+# Return ONLY valid JSON.
+# Generate exactly 10 MCQs.
+
+# FORMAT:
+# [
+#   {{
+#     "question": "text",
+#     "options": ["A", "B", "C", "D"],
+#     "answer": "A"
+#   }}
+# ]
+
+# SUBJECT: {subject}
+# TOPIC: {topic}
+# DIFFICULTY: {difficulty}
+# """
+
+#     try:
+#         response = client.chat.completions.create(
+#             model="gpt-4o-mini",
+#             messages=[{"role": "user", "content": prompt}],
+#             temperature=0.2
+#         )
+
+#         raw = response.choices[0].message.content.strip()
+#         start = raw.find("[")
+#         end = raw.rfind("]") + 1
+#         quiz = json.loads(raw[start:end])
+
+#         return jsonify(quiz)
+
+#     except Exception as e:
+#         print("Quiz generation error:", e)
+#         return jsonify([])
+
+# @app.route("/generate-quiz", methods=["POST"])
+# def generate_quiz():
+#     data = request.json
+#     subject = data.get("subject")
+#     topic = data.get("topic")
+#     difficulty = data.get("difficulty")
+
+#     prompt = f"""
+# Return ONLY valid JSON.
+# Generate exactly 10 MCQs.
+
+# FORMAT:
+# [
+#   {{
+#     "question": "text",
+#     "options": ["A", "B", "C", "D"],
+#     "answer": "A"
+#   }}
+# ]
+
+# SUBJECT: {subject}
+# TOPIC: {topic}
+# DIFFICULTY: {difficulty}
+# """
+
+#     try:
+#         response = client.responses.create(
+#             model="gpt-4.1-mini",
+#             input=prompt
+#         )
+
+#         raw = response.output_text
+#         quiz = json.loads(raw)
+#         return jsonify(quiz)
+
+#     except Exception as e:
+#         print("Quiz generation error:", e)
+#         return jsonify({"error": "Quiz generation failed"}), 500
 @app.route("/generate-quiz", methods=["POST"])
 def generate_quiz():
     data = request.json
@@ -190,25 +253,35 @@ FORMAT:
 SUBJECT: {subject}
 TOPIC: {topic}
 DIFFICULTY: {difficulty}
+
+Strictly return only the JSON array. Do NOT add any extra text.
 """
 
     try:
         response = client.chat.completions.create(
             model="gpt-4o-mini",
             messages=[{"role": "user", "content": prompt}],
-            temperature=0.2
+            temperature=0
         )
 
         raw = response.choices[0].message.content.strip()
+        print("🔹 RAW OPENAI TEXT:", raw)
+
+        # Make sure to only keep text between first [ and last ]
         start = raw.find("[")
         end = raw.rfind("]") + 1
-        quiz = json.loads(raw[start:end])
+        if start == -1 or end == -1:
+            raise ValueError("No JSON array found in response")
 
+        quiz = json.loads(raw[start:end])
         return jsonify(quiz)
 
     except Exception as e:
-        print("Quiz generation error:", e)
-        return jsonify([])
+        print("❌ QUIZ ERROR:", e)
+        return jsonify({"error": "Quiz generation failed"}), 500
+
+
+
 
 # ---------------- SAVE QUIZ RESULT ----------------
 @app.route("/save-result", methods=["POST"])
@@ -250,6 +323,27 @@ def practice_data(subject):
     return jsonify([dict(r) for r in rows])
 
 # ---------------- WEAKNESS ANALYSIS ----------------
+# @app.route("/weakness-data/<subject>")
+# def weakness_data(subject):
+#     conn = get_db()
+#     c = conn.cursor()
+#     c.execute("""
+#         SELECT topic,
+#                SUM(score) AS obtained,
+#                SUM(total) AS total
+#         FROM quiz_results
+#         WHERE subject=?
+#         GROUP BY topic
+#     """, (subject,))
+#     rows = c.fetchall()
+#     conn.close()
+
+#     result = {}
+#     for r in rows:
+#         percent = (r["obtained"] / r["total"]) * 100
+#         result[r["topic"]] = round(100 - percent)
+
+#     return jsonify(result)
 @app.route("/weakness-data/<subject>")
 def weakness_data(subject):
     conn = get_db()
@@ -267,9 +361,13 @@ def weakness_data(subject):
 
     result = {}
     for r in rows:
-        percent = (r["obtained"] / r["total"]) * 100
+        if r["total"] == 0 or r["total"] is None:
+            percent = 0
+        else:
+            percent = (r["obtained"] / r["total"]) * 100
         result[r["topic"]] = round(100 - percent)
 
+    print("🔹 Weakness Data:", result)  # Debug log
     return jsonify(result)
 
 # ---------------- AI FEEDBACK ----------------
@@ -314,4 +412,4 @@ def logout():
 
 # ---------------- RUN ----------------
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=10000)
