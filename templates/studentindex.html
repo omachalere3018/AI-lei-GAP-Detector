@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Learning Gap Dashboard</title>
+    <link rel="stylesheet" href="static/css/studentstyle.css">
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/js/studentscript.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <h2>Student Dashboard</h2>
+            <ul>
+                <li onclick="showTab('practice')">Practice/Test</li>
+                <li onclick="showTab('weakness')">Weakness Analysis</li>
+                <li onclick="showTab('study')">Study Claim</li>
+                <li onclick="showTab('feedback')">AI Feedback</li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main">
+            <!-- Subject Selection -->
+            <div class="subject-select">
+                <label>Select Subject:</label>
+                <select id="subjectSelect" onchange="updateSubjectData()">
+                    <option value="DBMS">Database Management Systems</option>
+                    <option value="DSA">Data Structures & Algorithms</option>
+                    <option value="OS">Operating Systems</option>
+                    <option value="CN">Computer Networks</option>
+                </select>
+            </div>
+
+            <!-- Practice/Test Page -->
+            <div id="practice" class="tab">
+                <h3>Practice/Test Page</h3>
+
+                <div class="quiz-btn-container">
+                    <button onclick="
+                        const subject = document.getElementById('subjectSelect').value;
+                        window.location.href = `/quiz?subject=${subject}`;
+                    ">
+                        Start AI Quiz
+                    </button>
+                </div>
+
+                <table id="practiceTable">
+                    <thead>
+                        <tr>
+                            <th>Test</th>
+                            <th>Score</th>
+                            <th>Weekly Growth</th>
+                            <!-- ✅ ADDED -->
+                            <th>Time(sec)</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Dynamic rows -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Weakness Analysis Page -->
+            <div id="weakness" class="tab">
+                <h3>Weakness Analysis</h3>
+                <canvas id="weaknessChart"></canvas>
+            </div>
+
+            <!-- Study Claim Page -->
+            <div id="study" class="tab">
+                <h3>Study Claim</h3>
+                <form id="studyForm">
+                    <label>Topic:</label>
+                    <input type="text" placeholder="Topic studied" required><br>
+                    <label>Time Claimed (minutes):</label>
+                    <input type="number" required><br>
+                    <label>Confidence (1-5):</label>
+                    <input type="number" min="1" max="5" required><br>
+                    <button type="submit">Submit Claim</button>
+                </form>
+            </div>
+
+            <!-- AI Feedback Page -->
+            <div id="feedback" class="tab">
+                <h3>AI Feedback</h3>
+                <canvas id="feedbackChart"></canvas>
+                <div class="tips">
+                    <h4>Improvement Tips:</h4>
+                    <ul id="tipsList"></ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/studentscript.js') }}"></script>
+</body>
+
+</html>
