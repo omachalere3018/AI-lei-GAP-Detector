@@ -1,0 +1,194 @@
+/* General body settings */
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    display: flex;
+    height: 100vh;
+}
+
+/* Container holding sidebar + main */
+.container {
+    display: flex;
+    width: 100%;
+}
+
+/* Sidebar styles */
+.sidebar {
+    width: 220px;
+    background-color: #2c3e50;
+    color: white;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.sidebar h2 {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+    width: 100%;
+}
+
+.sidebar ul li {
+    padding: 15px;
+    cursor: pointer;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    text-align: center;
+    transition: 0.3s;
+}
+
+.sidebar ul li:hover {
+    background-color: #34495e;
+}
+
+/* Main content styles */
+.main {
+    flex: 1;
+    padding: 20px;
+    background-color: #ecf0f1;
+    overflow-y: auto;
+}
+
+/* Tabs */
+.tab {
+    display: none;
+}
+
+.tab.active {
+    display: block;
+}
+
+/* Subject select */
+.subject-select {
+    margin-bottom: 20px;
+}
+
+.subject-select label {
+    font-weight: bold;
+    margin-right: 10px;
+}
+
+/* Table styling */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background-color: white;
+    box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
+
+th, td {
+    padding: 12px;
+    text-align: center;
+    border-bottom: 1px solid #ddd;
+}
+
+th {
+    background-color: #2980b9;
+    color: white;
+}
+
+/* Form styling */
+form input {
+    padding: 8px;
+    margin: 5px 0 15px 0;
+    width: 50%;
+    display: block;
+}
+
+form button {
+    padding: 8px 12px;
+    background-color: #2980b9;
+    color: white;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+form button:hover {
+    background-color: #3498db;
+}
+
+/* Canvas charts */
+canvas {
+    margin-top: 20px;
+    background-color: white;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
+
+/* Improvement tips */
+.tips {
+    margin-top: 20px;
+    background-color: white;
+    padding: 15px;
+    border-radius: 10px;
+    box-shadow: 0 0 5px rgba(0,0,0,0.1);
+}
+
+.tips h4 {
+    margin-top: 0;
+}
+
+
+/* Center Start AI Quiz Button */
+.quiz-btn-container {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.start-quiz-btn {
+    padding: 12px 25px;
+    font-size: 16px;
+    background-color: #2980b9;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.start-quiz-btn:hover {
+    background-color: #3498db;
+}
+
+canvas {
+    width: 100% !important;
+    height: 350px !important;
+}
+
+
+.quiz-btn-container {
+    display: flex;
+    justify-content: center;
+    margin: 25px 0 35px 0;
+}
+
+.quiz-btn-container button {
+    background: linear-gradient(135deg, #2563eb, #1e40af);
+    color: #ffffff;
+    border: none;
+    padding: 14px 34px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 10px;
+    cursor: pointer;
+    box-shadow: 0 8px 22px rgba(37, 99, 235, 0.35);
+    transition: all 0.3s ease;
+}
+
+.quiz-btn-container button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 28px rgba(37, 99, 235, 0.5);
+}
+
+.quiz-btn-container button:active {
+    transform: scale(0.96);
+}
