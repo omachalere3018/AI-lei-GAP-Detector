@@ -48,7 +48,7 @@
 
         <label>Subject</label>
         <input type="text" id="subject" readonly>
-         <!-- Populate subject from URL query parameter -->
+        <!-- Populate subject from URL query parameter -->
         <!-- const urlParams = new URLSearchParams(window.location.search); -->
         <!-- const subjectParam = urlParams.get("subject") || "DSA"; -->
         <!-- document.getElementById("subject").value = subjectParam; -->
@@ -90,6 +90,86 @@
         let startTime = null;
         let timerInterval = null;
 
+        // function generateQuiz() {
+        //     const subject = document.getElementById("subject").value;
+        //     const topic = document.getElementById("topic").value;
+        //     const difficulty = document.getElementById("difficulty").value;
+
+        //     if (!topic) {
+        //         alert("Please enter a topic");
+        //         return;
+        //     }
+
+        //     // ✅ SHOW LOADING IMMEDIATELY
+        //     document.getElementById("loadingText").style.display = "block";
+        //     document.getElementById("generateBtn").disabled = true;
+        //     document.getElementById("quiz-area").innerHTML = "";
+
+        //     // ✅ START TIMER ONLY AFTER QUESTIONS APPEAR
+        //     clearInterval(timerInterval);
+        //     startTime = Date.now();
+        //     document.getElementById("timer").innerText = "0";
+
+        //     timerInterval = setInterval(() => {
+        //         document.getElementById("timer").innerText =
+        //             Math.floor((Date.now() - startTime) / 1000);
+        //     }, 1000);
+
+
+        //     // clearInterval(timerInterval);
+        //     // startTime = Date.now();
+        //     // document.getElementById("timer").innerText = "0";
+
+        //     // timerInterval = setInterval(() => {
+        //     //     document.getElementById("timer").innerText =
+        //     //         Math.floor((Date.now() - startTime) / 1000);
+        //     // }, 1000);
+
+        //     fetch("/generate-quiz", {
+        //         method: "POST",
+        //         headers: { "Content-Type": "application/json" },
+        //         body: JSON.stringify({ subject, topic, difficulty })
+        //     })
+        //         .then(res => res.json())
+        //         .then(data => {
+        //             document.getElementById("loadingText").style.display = "none";
+        //             document.getElementById("generateBtn").disabled = false;
+
+        //             let questions = Array.isArray(data) ? data : data.quiz;
+        //             if (!questions || !questions.length) {
+        //                 alert("Quiz generation failed");
+        //                 return;
+        //             }
+
+        //             correctAnswers = [];
+        //             let html = "";
+
+        //             questions.forEach((q, index) => {
+        //                 let correct = q.answer.trim().toLowerCase();
+        //                 let matched = q.options.find(
+        //                     opt => opt.trim().toLowerCase() === correct
+        //                 ) || q.options[0];
+
+        //                 correctAnswers.push(matched);
+
+        //                 html += `<p><b>Q${index + 1}. ${q.question}</b></p>`;
+        //                 q.options.forEach(opt => {
+        //                     html += `
+        //                         <label>
+        //                             <input type="radio" name="q${index}" value="${opt}">
+        //                             ${opt}
+        //                         </label><br>
+        //                     `;
+        //                 });
+        //                 html += "<hr>";
+        //             });
+
+        //             html += `<button onclick="submitQuiz()">Submit Quiz</button>`;
+        //             html += `<h3 id="result"></h3>`;
+
+        //             document.getElementById("quiz-area").innerHTML = html;
+        //         });
+        // }
         function generateQuiz() {
             const subject = document.getElementById("subject").value;
             const topic = document.getElementById("topic").value;
@@ -100,19 +180,15 @@
                 return;
             }
 
-            // ✅ SHOW LOADING IMMEDIATELY
+            // UI state
             document.getElementById("loadingText").style.display = "block";
             document.getElementById("generateBtn").disabled = true;
             document.getElementById("quiz-area").innerHTML = "";
-
-            clearInterval(timerInterval);
-            startTime = Date.now();
             document.getElementById("timer").innerText = "0";
 
-            timerInterval = setInterval(() => {
-                document.getElementById("timer").innerText =
-                    Math.floor((Date.now() - startTime) / 1000);
-            }, 1000);
+            // ❌ STOP ANY EXISTING TIMER
+            clearInterval(timerInterval);
+            startTime = null;
 
             fetch("/generate-quiz", {
                 method: "POST",
@@ -124,8 +200,7 @@
                     document.getElementById("loadingText").style.display = "none";
                     document.getElementById("generateBtn").disabled = false;
 
-                    let questions = Array.isArray(data) ? data : data.quiz;
-                    if (!questions || !questions.length) {
+                    if (!Array.isArray(data) || data.length === 0) {
                         alert("Quiz generation failed");
                         return;
                     }
@@ -133,7 +208,7 @@
                     correctAnswers = [];
                     let html = "";
 
-                    questions.forEach((q, index) => {
+                    data.forEach((q, index) => {
                         let correct = q.answer.trim().toLowerCase();
                         let matched = q.options.find(
                             opt => opt.trim().toLowerCase() === correct
@@ -144,11 +219,11 @@
                         html += `<p><b>Q${index + 1}. ${q.question}</b></p>`;
                         q.options.forEach(opt => {
                             html += `
-                                <label>
-                                    <input type="radio" name="q${index}" value="${opt}">
-                                    ${opt}
-                                </label><br>
-                            `;
+                        <label>
+                            <input type="radio" name="q${index}" value="${opt}">
+                            ${opt}
+                        </label><br>
+                    `;
                         });
                         html += "<hr>";
                     });
@@ -156,7 +231,15 @@
                     html += `<button onclick="submitQuiz()">Submit Quiz</button>`;
                     html += `<h3 id="result"></h3>`;
 
+                    // ✅ QUESTIONS RENDERED FIRST
                     document.getElementById("quiz-area").innerHTML = html;
+
+                    // ✅ NOW START TIMER (ONLY HERE)
+                    startTime = Date.now();
+                    timerInterval = setInterval(() => {
+                        document.getElementById("timer").innerText =
+                            Math.floor((Date.now() - startTime) / 1000);
+                    }, 1000);
                 });
         }
 
